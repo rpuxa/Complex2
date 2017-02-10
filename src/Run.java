@@ -1,3 +1,5 @@
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Scanner;
 
 class Z {
@@ -12,24 +14,106 @@ class Z {
 
 public class Run {
 
-    private static final double pi=3.14159265358979323846;
+    private static final double pi = 3.14159265358979323846;
 
     public static void main(String[] agrs) {
 
         Scanner in = new Scanner(System.in);
         String s = in.nextLine();
+        char[] chars = s.toCharArray();
+        Deque<Z> queue = new ArrayDeque<>();
+        Deque<Character> stack = new ArrayDeque<>();
+        String ram = "";
+        for (int i = 0; i <= s.length()-1; i++) {
+            switch (chars[i]) {
+                case ('+'): {
+                    if ((!stack.isEmpty()) && (stack.peekLast() == '*')) {
+                        if (ram!=" ")
+                        queue.addLast(new Z(new Double(ram), 0));
+                        ram = "";
+                        Z z1 = queue.pollLast();
+                        Z z2 = queue.pollLast();
+                        Z z = mult(z1, z2);
+                        queue.addLast(z);
+                        stack.pollLast();
+                        stack.addLast('+');
+                        break;
+                    }
+                    if ((!stack.isEmpty()) && (stack.peekLast() == '/')) {
+                        if (ram!=" ")
+                        queue.addLast(new Z(new Double(ram), 0));
+                        ram = "";
+                        Z z1 = queue.pollLast();
+                        Z z2 = queue.pollLast();
+                        Z z = div(z2, z1);
+                        queue.addLast(z);
+                        stack.pollLast();
+                        stack.addLast('+');
+                        break;
+                    }
+                    if (ram!=" ")
+                    queue.addLast(new Z(new Double(ram), 0));
+                    ram = "";
+                    stack.addLast('+');
+                    break;
+                }
+                case ('-'): {
+                    ram="-";
+                    break;
+                }
+                case '*': {
+                    if (ram!=" ")
+                    queue.addLast(new Z(new Double(ram), 0));
+                    ram = "";
+                    stack.addLast('*');
+                    break;
+                }
+                case 'i': {
+                    if ((ram == " ") || (ram == ""))
+                        ram="1";
+                    if (ram=="-")
+                        ram="-1";
+                    queue.addLast(new Z(0, new Double(ram)));
+                    ram = " ";
+                    break;
+                }
+                default: ram += chars[i];
+            }
+        }
+        System.out.println(stack.peekLast());
+        if ((ram!="") && (ram!=" "))
+        queue.addLast(new Z(new Double(ram),0));
+        while (!stack.isEmpty()) {
+             if (stack.peekLast() == '+') {
+                Z z1 = queue.pollLast();
+                Z z2 = queue.pollLast();
+                Z z = sum(z2, z1);
+                queue.addLast(z);
+                stack.pollLast();
+            }
+            else if (stack.peekLast() == '*') {
+                Z z1 = queue.pollLast();
+                Z z2 = queue.pollLast();
+                Z z = mult(z2, z1);
+                queue.addLast(z);
+                stack.pollLast();
+            }
+        }
+        System.out.println(queue.peekFirst().re);
+        System.out.println(queue.peekFirst().im);
     }
 
-    private static Z sum(Z z1,Z z2){
-        return new Z(z1.re+z2.re,z2.im+z1.im);
+
+    private static Z sum(Z z1, Z z2) {
+        return new Z(z1.re + z2.re, z2.im + z1.im);
     }
 
-    private static Z mult(Z z1,Z z2){
-        return new Z(z1.re*z2.re-z1.im*z2.im,z1.im*z2.re+z1.re*z2.im);
+    private static Z mult(Z z1, Z z2) {
+        return new Z(z1.re * z2.re - z1.im * z2.im, z1.im * z2.re + z1.re * z2.im);
     }
 
-    private static Z div(Z z1,Z z2){
-        return new Z((z1.re*z2.re+z1.im*z2.im)/(Math.pow(z2.re,2)+Math.pow(z2.im,2)),(z1.im*z2.re-z1.re*z2.im)/(Math.pow(z2.re,2)+Math.pow(z2.im,2)));
+    private static Z div(Z z1, Z z2) {
+        return new Z((z1.re * z2.re + z1.im * z2.im) / (Math.pow(z2.re, 2) + Math.pow(z2.im, 2)), (z1.im * z2.re - z1.re * z2.im) / (Math.pow(z2.re, 2) + Math.pow(z2.im, 2)));
     }
 
     private static Z abs(Z z){
